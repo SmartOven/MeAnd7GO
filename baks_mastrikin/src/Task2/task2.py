@@ -1,15 +1,52 @@
-def print_results(res):
-    pass
+op1 = str(input())
+op2 = str(input())
+op3 = str(input())
+if op1 == '<' and op2 == '<' and op3 == '<':
+    print("abc")
 
-results = {'a': 0, 'b': 0, 'c': 0}
+if op1 == '<' and op2 == '<' and op3 == '>':
+    print("acb")
 
-for i in ['a', 'b']:
-    for j in ['b', 'c']:
-        if i != j:
-            op = str(input())
-            if op == '>':
-                results[i] += 1
-            elif op == '<':
-                results[j] += 1
+if op1 == '<' and op2 == '<' and op3 == '=':
+    print("abc")
+    print("acb")
 
-print_results(results)
+if op1 == '<' and op2 == '>' and op3 == '>':
+    print("cab")
+
+if op1 == '<' and op2 == '=' and op3 == '>':
+    print("acb")
+    print("cab")
+
+if op1 == '>' and op2 == '<' and op3 == '<':
+    print("bac")
+
+if op1 == '>' and op2 == '>' and op3 == '<':
+    print("bca")
+
+if op1 == '>' and op2 == '>' and op3 == '>':
+    print("cba")
+
+if op1 == '>' and op2 == '>' and op3 == '=':
+    print("bca")
+    print("cba")
+
+if op1 == '>' and op2 == '=' and op3 == '<':
+    print("bac")
+    print("bca")
+
+if op1 == '=' and op2 == '<' and op3 == '<':
+    print("abc")
+    print("bac")
+
+if op1 == '=' and op2 == '>' and op3 == '>':
+    print("cab")
+    print("cba")
+
+if op1 == '=' and op2 == '=' and op3 == '=':
+    print("abc")
+    print("acb")
+    print("bac")
+    print("bca")
+    print("cab")
+    print("cba")
