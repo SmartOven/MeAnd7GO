@@ -1,2 +1,2 @@
-# Not a Tinkoff Start exam =)
-Yes it is
+# Some tasks
+for out friend Maks Bastrikin
