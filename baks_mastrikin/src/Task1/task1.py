@@ -1,5 +1,7 @@
-a, b, n = map(int, input().split())
+a = int(input())
+b = int(input())
+n = int(input())
 if a > round(b / n):
-    print('YES')
+    print('Yes')
 else:
-    print('NO')
+    print('No')
