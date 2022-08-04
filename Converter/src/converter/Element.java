@@ -17,10 +17,6 @@ public class Element {
         this.children = children;
     }
 
-    public boolean isValueNull() {
-        return value == null;
-    }
-
     public String getName() {
         return name;
     }
