@@ -1,0 +1,25 @@
+<transactions>
+    <id>6753322</id>
+    <data>
+        <element>123</element>
+        <element>true</element>
+        <element>false</element>
+        <element></element>
+        <element></element>
+        <element></element>
+        <element></element>
+        <element>
+            <element>1</element>
+            <element>2</element>
+            <element>3</element>
+            <element attr="value6">value7</element>
+        </element>
+        <element />
+        <element></element>
+        <element>
+            <key1>value1</key1>
+            <key2 attr="value2">value3</key2>
+        </element>
+        <element attr2="value4">value5</element>
+    </data>
+</transactions>
