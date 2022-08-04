@@ -2,6 +2,7 @@ package converter.parser;
 
 import converter.Element;
 import converter.entity.Xml;
+import converter.error.XmlSyntaxError;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,19 +28,27 @@ public class XmlParser implements Parser<Xml> {
         xmlConfigTagPattern = Pattern.compile("<\\?.+?\\?>");
     }
 
+    /**
+     * <h3>Parsing Xml file data trough Xml tags:</h3>
+     * <p>Skipping config tag</p>
+     * <p>For the remaining tags:</p>
+     * <ol>
+     *     <li><b>If it is open tag</b>: add new element to the stack (prev stack element is the parent for the new one)</li>
+     *     <li><b>If it is close tag</b>: remove last element from the stack (if closing tag name is not equal to the opening tag name - throw error)</li>
+     *     <li><b>If it is self-closing tag</b>: don't touch stack, the last stack element is parent as in case with opening tag</li>
+     * </ol>
+     * @param data String with Xml file data
+     * @return Xml object
+     */
     @Override
     public Xml parse(String data) {
         // Skip config tags
-        int start = 0;
-        Matcher configTagsMatcher = xmlConfigTagPattern.matcher(data);
-        while (configTagsMatcher.find()) {
-            start = configTagsMatcher.end();
-        }
-        data = data.substring(start);
+        data = skipConfigTag(data);
 
-        Stack<Element> elementStack = new Stack<>();
-        Element root = null;
+        Stack<Element> elementStack = new Stack<>();  // tracking parents for tags
+        Element root = null;  // tracking root element
         Matcher dataMather = xmlTagPattern.matcher(data);
+
         // Scan every xml tag
         while (dataMather.find()) {
             String tag = dataMather.group();
@@ -54,36 +63,54 @@ public class XmlParser implements Parser<Xml> {
             );
 
             if (isOpen(tag)) {
-                // Resolving parent
-                resolveParent(element, elementStack);
+                // Adding element as child for current parent
+                addAsChildToParent(element, elementStack);
 
                 // Add tag to the stack
                 elementStack.add(element);
             } else if (isClose(tag)) {
-                // Remove tag from the stack (if it equals prev name)
+                // Remove tag from the stack (if it is closing previously opened tag)
                 if (!isClosingOpenedTag(element, elementStack)) {
-                    throw new IllegalArgumentException();
+                    throw new XmlSyntaxError(String.format("Opening and closing tag names are different (opened '%s', but trying to close '%s')", elementStack.peek().getName(), element.getName()));
                 }
-                root = elementStack.pop();
+                Element closedElement = elementStack.pop();
+                if (closedElement.getValue() == null && !closedElement.hasChildren()) {
+                    element.markAsEmptyArray();
+                }
+                root = closedElement;
             } else if (isSelfClose(tag)) {
-                // Resolving parent
-                resolveParent(element, elementStack);
-
-                // No need to track in the stack
+                // Adding element as child for current parent
+                // No need to track it in the stack
+                addAsChildToParent(element, elementStack);
             } else {
-                throw new IllegalArgumentException();
+                // Tag has wrong syntax
+                throw new XmlSyntaxError("Xml tag has wrong syntax");
             }
         }
+
+        if (!elementStack.isEmpty()) {
+            throw new XmlSyntaxError(String.format("(%d) opened %s were not closed", elementStack.size(), elementStack.size() == 1 ? "tag" : "tags"));
+        }
+
         return new Xml(root);
     }
 
-    private void resolveParent(Element element, Stack<Element> elementStack) {
-        // Add element as child and set it parent
+    private String skipConfigTag(String data) {
+        int start = 0;
+        Matcher configTagsMatcher = xmlConfigTagPattern.matcher(data);
+        while (configTagsMatcher.find()) {
+            start = configTagsMatcher.end();
+        }
+        return data.substring(start);
+    }
+
+    private void addAsChildToParent(Element element, Stack<Element> elementStack) {
+        // Add element as child and set its parent
         if (!elementStack.isEmpty()) {
             Element parent = elementStack.peek();
             parent.addChild(element);
             element.setParent(parent);
-        }
+        } // if stack is empty, element is being root and nothing can have it as child
     }
 
     private boolean isClosingOpenedTag(Element element, Stack<Element> elementStack) {
@@ -122,16 +149,16 @@ public class XmlParser implements Parser<Xml> {
         data = data.substring(start).replaceAll("^\\s*", "");
         Matcher valueMatcher = Pattern.compile("[^<]*").matcher(data);
         if (!valueMatcher.find()) {
-            throw new IllegalArgumentException();
+            throw new XmlSyntaxError();
         }
         String value = valueMatcher.group();
-        return "".equals(value) ? null : value;
+        return value.isEmpty() ? null : value;
     }
 
     private String getName(String noBreaksTag) {
         Matcher matcher = Pattern.compile("^[a-z0-9_\\-]+").matcher(noBreaksTag);
         if (!matcher.find()) {
-            throw new IllegalArgumentException();
+            throw new XmlSyntaxError("Tag name is incorrect");
         }
         return matcher.group();
     }
@@ -172,6 +199,7 @@ public class XmlParser implements Parser<Xml> {
                 </transactions>
                 """;
 
-        var obj = new XmlParser().parse(data);
+        Xml xml = new XmlParser().parse(data);
+        System.out.println(xml);
     }
 }
