@@ -1,5 +1,6 @@
 package converter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Element {
@@ -12,9 +13,9 @@ public class Element {
     public Element(String name, String value, List<Attribute> attributes, Element parent, List<Element> children) {
         this.name = name;
         this.value = value;
-        this.attributes = attributes;
+        this.attributes = (attributes != null) ? attributes : new ArrayList<>();
         this.parent = parent;
-        this.children = children;
+        this.children = (children != null) ? children : new ArrayList<>();
     }
 
     public String getName() {
@@ -37,7 +38,27 @@ public class Element {
         return children;
     }
 
-    private static class Attribute {
+    public void addChild(Element child) {
+        children.add(child);
+    }
 
+    public void setParent(Element parent) {
+        this.parent = parent;
+    }
+
+    public record Attribute(String name, String value) {
+
+        public String getName() {
+            return name;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return name + " = \"" + value + "\"";
+        }
     }
 }
