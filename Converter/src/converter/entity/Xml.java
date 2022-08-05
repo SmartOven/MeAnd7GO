@@ -3,7 +3,7 @@ package converter.entity;
 import converter.Element;
 
 public class Xml implements Entity {
-    private Element root;
+    private final Element root;
 
     public Xml(Element root) {
         this.root = root;
@@ -39,8 +39,7 @@ public class Xml implements Entity {
      * @param depth tag nesting depth
      */
     private void recursivelyBuildXmlString(Element element, StringBuilder sb, int depth) {
-        // FIXME
-        //  Не добавляет закрывающийся тег (видимо после выхода из рекурсии), неправильно определяет пустые массивы (путает с null)
+        // Adding open tag part (if tag is self-closing, adds full tag)
         sb.append("\t".repeat(depth)).append(elementToXmlTagString(element));
 
         if (element.isNullElement()) {
@@ -48,7 +47,7 @@ public class Xml implements Entity {
             return; // if element is null, nothing else need to do
         }
 
-        if (element.isEmptyArrayElement()) {
+        if (element.isArrayElement() && !element.hasChildren()) {
             sb.append("</").append(element.getName()).append(">");
             sb.append("\n");
             return; // if element is representing empty array, just close the tag
@@ -56,10 +55,11 @@ public class Xml implements Entity {
 
         if (element.hasChildren()) {
             sb.append("\n");
-            depth++;
             for (Element elementChild : element.getChildren()) {
-                recursivelyBuildXmlString(elementChild, sb, depth);
+                recursivelyBuildXmlString(elementChild, sb, depth + 1);
             }
+            sb.append("\t".repeat(depth)).append("</").append(element.getName()).append(">");
+            sb.append("\n");
             return; // if element has children, make recursion step
         }
 
@@ -67,10 +67,6 @@ public class Xml implements Entity {
         sb.append(element.getValue());
         sb.append("</").append(element.getName()).append(">");
         sb.append("\n");
-    }
-
-    private boolean isSelfClosingTag(Element element) {
-        return element.getValue() == null;
     }
 
     private String elementToXmlTagString(Element element) {

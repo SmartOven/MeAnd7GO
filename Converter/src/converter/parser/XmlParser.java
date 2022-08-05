@@ -54,34 +54,45 @@ public class XmlParser implements Parser<Xml> {
             String tag = dataMather.group();
             String noBreaksTag = removeTagBreaks(tag);
 
-            Element element = new Element(
-                    getName(noBreaksTag),
-                    getValue(data, dataMather.end()),
-                    getAttributes(noBreaksTag),
-                    null,
-                    new ArrayList<>()
-            );
-
             if (isOpen(tag)) {
+                // Create element object
+                Element element = new Element(
+                        getName(noBreaksTag),
+                        getValue(data, dataMather.end()),
+                        getAttributes(noBreaksTag)
+                );
+
                 // Adding element as child for current parent
                 addAsChildToParent(element, elementStack);
+
+                // If tag is opening and has no value - it is an array
+                element.setArrayElement(element.getValue() == null);
 
                 // Add tag to the stack
                 elementStack.add(element);
             } else if (isClose(tag)) {
+                String closeTagName = getName(noBreaksTag);
+
                 // Remove tag from the stack (if it is closing previously opened tag)
-                if (!isClosingOpenedTag(element, elementStack)) {
-                    throw new XmlSyntaxError(String.format("Opening and closing tag names are different (opened '%s', but trying to close '%s')", elementStack.peek().getName(), element.getName()));
+                if (!isClosingOpenedTag(closeTagName, elementStack)) {
+                    throw new XmlSyntaxError(String.format("Opening and closing tag names are different (opened '%s', but trying to close '%s')", elementStack.peek().getName(), closeTagName));
                 }
-                Element closedElement = elementStack.pop();
-                if (closedElement.getValue() == null && !closedElement.hasChildren()) {
-                    element.markAsEmptyArray();
-                }
-                root = closedElement;
+
+                root = elementStack.pop();
             } else if (isSelfClose(tag)) {
+                // Create element object
+                Element element = new Element(
+                        getName(noBreaksTag),
+                        null,
+                        getAttributes(noBreaksTag)
+                );
+
                 // Adding element as child for current parent
                 // No need to track it in the stack
                 addAsChildToParent(element, elementStack);
+
+                // Tag is self-closing, so it is representing null value
+                element.setNullElement(true);
             } else {
                 // Tag has wrong syntax
                 throw new XmlSyntaxError("Xml tag has wrong syntax");
@@ -113,8 +124,8 @@ public class XmlParser implements Parser<Xml> {
         } // if stack is empty, element is being root and nothing can have it as child
     }
 
-    private boolean isClosingOpenedTag(Element element, Stack<Element> elementStack) {
-        return !elementStack.isEmpty() && element.getName().equals(elementStack.peek().getName());
+    private boolean isClosingOpenedTag(String name, Stack<Element> elementStack) {
+        return !elementStack.isEmpty() && name.equals(elementStack.peek().getName());
     }
 
     private boolean isOpen(String tag) {
@@ -197,9 +208,17 @@ public class XmlParser implements Parser<Xml> {
                         <element attr2="value4">value5</element>
                     </data>
                 </transactions>
+                <data>
+                    <element />
+                    <element></element>
+                </data>
                 """;
 
-        Xml xml = new XmlParser().parse(data);
+        Xml xml = new XmlParser().parse("""
+                <data>
+                    <element />
+                    <element></element>
+                </data>""");
         System.out.println(xml);
     }
 }

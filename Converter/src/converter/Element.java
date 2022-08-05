@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Element {
-    private String name;
-    private String value;
-    private List<Attribute> attributes;
+    private final String name;
+    private final String value;
+    private final List<Attribute> attributes;
     private Element parent;
-    private List<Element> children;
+    private final List<Element> children;
+    
+    private boolean arrayElement = false;
+    private boolean nullElement = false;
 
     public Element(String name, String value, List<Attribute> attributes, Element parent, List<Element> children) {
         this.name = name;
@@ -16,6 +19,10 @@ public class Element {
         this.attributes = (attributes != null) ? attributes : new ArrayList<>();
         this.parent = parent;
         this.children = (children != null) ? children : new ArrayList<>();
+    }
+
+    public Element(String name, String value, List<Attribute> attributes) {
+        this(name, value, attributes, null, null);
     }
 
     public String getName() {
@@ -40,26 +47,31 @@ public class Element {
 
     public void addChild(Element child) {
         children.add(child);
+        nullElement = false;
+    }
+
+    public void setNullElement(boolean nullElement) {
+        this.nullElement = nullElement;
     }
 
     public void setParent(Element parent) {
         this.parent = parent;
     }
 
-    public boolean isEmptyArrayElement() {
-        return value != null && value.isEmpty();
+    public boolean isArrayElement() {
+        return arrayElement;
     }
 
     public boolean isNullElement() {
-        return value == null && !hasChildren();
+        return nullElement;
     }
 
     public boolean hasChildren() {
-        return children.size() > 0;
+        return !children.isEmpty();
     }
 
-    public void markAsEmptyArray() {
-        this.value = "";
+    public void setArrayElement(boolean arrayElement) {
+        this.arrayElement = arrayElement;
     }
 
     public record Attribute(String name, String value) {
