@@ -42,12 +42,12 @@ public class Xml implements Entity {
         // Adding open tag part (if tag is self-closing, adds full tag)
         sb.append("\t".repeat(depth)).append(elementToXmlTagString(element));
 
-        if (element.isNullElement()) {
+        if (element.isNullValue()) {
             sb.append("\n");
             return; // if element is null, nothing else need to do
         }
 
-        if (element.isArrayElement() && !element.hasChildren()) {
+        if (element.isContainArray() && !element.hasChildren()) {
             sb.append("</").append(element.getName()).append(">");
             sb.append("\n");
             return; // if element is representing empty array, just close the tag
@@ -79,7 +79,7 @@ public class Xml implements Entity {
         }
 
         // If element is null-element, tag is self-closing
-        if (element.isNullElement()) {
+        if (element.isNullValue()) {
             sb.append('/');
         }
         sb.append('>');

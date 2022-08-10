@@ -12,8 +12,7 @@ import java.util.regex.Pattern;
 
 public class XmlParser implements Parser<Xml> {
 
-    // Regex patterns
-    // XML tags
+    // Regex patterns for XML tags
     private static final Pattern xmlTagPattern;
     private static final Pattern xmlOpenTagPattern;
     private static final Pattern xmlCloseTagPattern;
@@ -66,7 +65,7 @@ public class XmlParser implements Parser<Xml> {
                 addAsChildToParent(element, elementStack);
 
                 // If tag is opening and has no value - it is an array
-                element.setArrayElement(element.getValue() == null);
+                element.setContainArray(element.getValue() == null);
 
                 // Add tag to the stack
                 elementStack.add(element);
@@ -92,7 +91,7 @@ public class XmlParser implements Parser<Xml> {
                 addAsChildToParent(element, elementStack);
 
                 // Tag is self-closing, so it is representing null value
-                element.setNullElement(true);
+                element.setNullValue(true);
             } else {
                 // Tag has wrong syntax
                 throw new XmlSyntaxError("Xml tag has wrong syntax");

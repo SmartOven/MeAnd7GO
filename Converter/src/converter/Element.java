@@ -5,13 +5,29 @@ import java.util.List;
 
 public class Element {
     private final String name;
-    private final String value;
+    private String value;
     private final List<Attribute> attributes;
     private Element parent;
     private final List<Element> children;
     
-    private boolean arrayElement = false;
-    private boolean nullElement = false;
+    private boolean containArray = false;
+    private boolean nullValue = false;
+
+    public static Element emptyArray(String name, List<Attribute> attributes) {
+        Element element = new Element(name, null, attributes);
+        element.setContainArray(true);
+        return element;
+    }
+
+    public static Element nullElement(String name, List<Attribute> attributes) {
+        Element element = new Element(name, null, attributes);
+        element.setNullValue(true);
+        return element;
+    }
+
+    public static Element arrayElement(String value, Element parent) {
+        return new Element("element", value, null, parent, null);
+    }
 
     public Element(String name, String value, List<Attribute> attributes, Element parent, List<Element> children) {
         this.name = name;
@@ -33,8 +49,16 @@ public class Element {
         return value;
     }
 
+    public void setValue(String value) {
+        this.value = value;
+    }
+
     public List<Attribute> getAttributes() {
         return attributes;
+    }
+
+    public void addAttribute(Attribute attribute) {
+        attributes.add(attribute);
     }
 
     public Element getParent() {
@@ -47,31 +71,31 @@ public class Element {
 
     public void addChild(Element child) {
         children.add(child);
-        nullElement = false;
+        nullValue = false;
     }
 
-    public void setNullElement(boolean nullElement) {
-        this.nullElement = nullElement;
+    public void setNullValue(boolean nullValue) {
+        this.nullValue = nullValue;
     }
 
     public void setParent(Element parent) {
         this.parent = parent;
     }
 
-    public boolean isArrayElement() {
-        return arrayElement;
+    public boolean isContainArray() {
+        return containArray;
     }
 
-    public boolean isNullElement() {
-        return nullElement;
+    public boolean isNullValue() {
+        return nullValue;
     }
 
     public boolean hasChildren() {
         return !children.isEmpty();
     }
 
-    public void setArrayElement(boolean arrayElement) {
-        this.arrayElement = arrayElement;
+    public void setContainArray(boolean containArray) {
+        this.containArray = containArray;
     }
 
     public record Attribute(String name, String value) {
