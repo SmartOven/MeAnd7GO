@@ -1,11 +1,11 @@
 version: '3.8'
 services:
-  miallo-db:
-    image: mongo
-    container_name: miallo-db-container
+  highload-db:
+    image: mongo:latest
+    container_name: highload-db-container
     restart: unless-stopped
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=panteleevya
+      - MONGO_INITDB_ROOT_USERNAME=highload
       - MONGO_INITDB_ROOT_PASSWORD=12345
     ports:
       - "27018:27017"
