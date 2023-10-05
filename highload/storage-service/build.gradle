@@ -26,17 +26,16 @@ dependencies {
 //    implementation 'org.springframework.boot:spring-boot-starter-amqp'
 //    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 //    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-//    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 //    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 //    implementation 'org.springframework.kafka:spring-kafka'
 //    runtimeOnly 'org.postgresql:postgresql'
 //    testImplementation 'org.springframework.amqp:spring-rabbit-test'
 //    testImplementation 'org.springframework.kafka:spring-kafka-test'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    implementation 'org.springframework.data:spring-data-mongodb:4.1.4'
 }
 
 tasks.named('test') {

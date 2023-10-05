@@ -7,5 +7,6 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=highload
       - MONGO_INITDB_ROOT_PASSWORD=12345
+      - MONGO_INITDB_DATABASE=keyValueDb
     ports:
       - "27018:27017"

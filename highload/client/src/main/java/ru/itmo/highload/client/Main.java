@@ -1,19 +1,18 @@
 package ru.itmo.highload.client;
 
-import java.net.URI;
 import java.util.Scanner;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
+import ru.itmo.highload.client.kv.KeyValueDto;
+import ru.itmo.highload.client.kv.KeyValueViewModel;
+import ru.itmo.highload.client.web.KeyValueService;
 
 public class Main {
     private static final Logger log = Logger.getInstance();
 
     public static void main(String[] args) {
+        KeyValueService keyValueService = new KeyValueService();
         log.info("Starting...");
         Scanner scanner = new Scanner(System.in);
-        RestTemplate restTemplate = new RestTemplate();
-        URI uri = URI.create("http://localhost:8080/api/ping");
         log.info("Ready to accept requests");
         while (true) {
             String input = scanner.nextLine().trim();
@@ -21,13 +20,30 @@ public class Main {
                 log.info("Exiting...");
                 break;
             }
-            ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
-            if (response.getStatusCode().is2xxSuccessful()) {
-                String responseBody = response.getBody();
-                log.info("Response: " + responseBody);
-            } else {
-                log.info("Request failed with status code: " + response.getStatusCode());
+            String[] parts = input.trim().split(" +");
+            if (parts.length < 2) {
+                log.error("Not enough arguments");
+                break;
             }
+
+            String command = parts[0];
+            if (command.equalsIgnoreCase("set")) {
+                if (parts.length < 3) {
+                    log.error("Not enough arguments for `set` command");
+                    break;
+                }
+                KeyValueDto keyValueDto = new KeyValueDto(parts[1], parts[2]);
+                KeyValueViewModel keyValueViewModel = keyValueService.set(keyValueDto);
+                System.out.println("set performed: " + keyValueViewModel);
+            }
+
+            if (command.equalsIgnoreCase("get")) {
+                KeyValueViewModel keyValueViewModel = keyValueService.get(parts[1]);
+                System.out.println("get performed: " + keyValueViewModel);
+                break;
+            }
+
+            log.error(String.format("There is no command %s", command));
         }
     }
 }

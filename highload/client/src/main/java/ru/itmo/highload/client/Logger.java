@@ -14,6 +14,14 @@ public class Logger {
     }
 
     public void info(String message) {
-        System.out.println(message);
+        System.out.println("INFO " + message);
+    }
+
+    public void warn(String message) {
+        System.out.println("WARN " + message);
+    }
+
+    public void error(String message) {
+        System.out.println("ERROR " + message);
     }
 }
