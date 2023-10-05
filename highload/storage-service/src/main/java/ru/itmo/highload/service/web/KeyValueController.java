@@ -2,10 +2,15 @@ package ru.itmo.highload.service.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import ru.itmo.highload.service.kv.KeyValueDocument;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.itmo.highload.service.kv.KeyValueDto;
 import ru.itmo.highload.service.kv.KeyValueService;
+import ru.itmo.highload.service.kv.KeyValueViewModel;
 
 @RestController
 @RequestMapping("/api")
@@ -18,13 +23,13 @@ public class KeyValueController {
 
     @GetMapping("/get")
     public ResponseEntity<?> get(@RequestParam String key) {
-        KeyValueDocument keyValueDocument = keyValueService.get(key);
-        return ResponseEntity.ok(keyValueDocument);
+        KeyValueViewModel keyValue = keyValueService.get(key);
+        return ResponseEntity.ok(keyValue);
     }
 
     @PostMapping("/set")
     public ResponseEntity<?> set(@RequestBody KeyValueDto keyValueDto) {
-        KeyValueDocument keyValueDocument = keyValueService.update(keyValueDto);
-        return ResponseEntity.ok(keyValueDocument);
+        KeyValueViewModel keyValue = keyValueService.update(keyValueDto);
+        return ResponseEntity.ok(keyValue);
     }
 }

@@ -16,16 +16,18 @@ public class KeyValueService {
         this.keyValueMapper = keyValueMapper;
     }
 
-    public KeyValueDocument get(String key) {
-        return keyValueRepository.findByKey(key).orElse(null);
+    public KeyValueViewModel get(String key) {
+        return keyValueRepository.findByKey(key)
+                .map(keyValueMapper::toViewModel)
+                .orElse(null);
     }
 
-    public KeyValueDocument update(KeyValueDto keyValueDto) {
+    public KeyValueViewModel update(KeyValueDto keyValueDto) {
         KeyValueDocument keyValueDocument = keyValueMapper.toDocument(keyValueDto);
         String id = keyValueRepository.findByKey(keyValueDto.getKey())
                 .map(KeyValueDocument::getId)
                 .orElse(null);
         keyValueDocument.setId(id);
-        return keyValueRepository.save(keyValueDocument);
+        return keyValueMapper.toViewModel(keyValueRepository.save(keyValueDocument));
     }
 }
