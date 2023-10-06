@@ -12,8 +12,8 @@ import org.springframework.web.client.RestTemplate;
 
 public class KeyValueService {
     private static final Log log = HttpLogging.forLogName(KeyValueService.class);
-    private static final String URL_GET = "http://localhost:8080/api/get";
-    private static final String URL_SET = "http://localhost:8080/api/set";
+    private static final String URL_GET = "http://10.5.0.3:8080/api/get";
+    private static final String URL_SET = "http://10.5.0.3:8080/api/set";
     private final RestTemplate restTemplate;
 
     public KeyValueService() {
