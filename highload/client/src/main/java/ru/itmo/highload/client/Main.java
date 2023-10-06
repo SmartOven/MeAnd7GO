@@ -1,6 +1,5 @@
 package ru.itmo.highload.client;
 
-import java.util.Scanner;
 
 import org.apache.commons.logging.Log;
 import org.springframework.http.HttpLogging;
@@ -14,44 +13,33 @@ public class Main {
     public static void main(String[] args) {
         KeyValueService keyValueService = new KeyValueService();
         log.info("Starting...");
-        Scanner scanner = new Scanner(System.in);
-        log.info("Ready to accept requests");
-        while (true) {
-            try {
-                String input = scanner.nextLine().trim();
-                if (input.equals("exit")) {
-                    log.info("Exiting...");
-                    break;
-                }
-
-                String[] parts = input.trim().split(" +");
-                if (parts.length < 2) {
-                    log.error("Not enough arguments");
-                    continue;
-                }
-
-                String command = parts[0];
-                if (command.equalsIgnoreCase("set")) {
-                    if (parts.length < 3) {
-                        log.error("Not enough arguments for `set` command");
-                        continue;
-                    }
-                    KeyValueDto keyValueDto = new KeyValueDto(parts[1], parts[2]);
-                    KeyValueViewModel keyValueViewModel = keyValueService.set(keyValueDto);
-                    System.out.println("set performed: " + keyValueViewModel);
-                    continue;
-                }
-
-                if (command.equalsIgnoreCase("get")) {
-                    KeyValueViewModel keyValueViewModel = keyValueService.get(parts[1]);
-                    System.out.println("get performed: " + keyValueViewModel);
-                    continue;
-                }
-
-                log.error(String.format("There is no command %s", command));
-            } catch (RuntimeException e) {
-                log.error(e.getMessage());
+        try {
+            if (args.length < 2) {
+                log.error("Not enough arguments");
+                return;
             }
+
+            String command = args[0];
+            if (command.equalsIgnoreCase("set")) {
+                if (args.length < 3) {
+                    log.error("Not enough arguments for `set` command");
+                    return;
+                }
+                KeyValueDto keyValueDto = new KeyValueDto(args[1], args[2]);
+                KeyValueViewModel keyValueViewModel = keyValueService.set(keyValueDto);
+                System.out.println("set performed: " + keyValueViewModel);
+                return;
+            }
+
+            if (command.equalsIgnoreCase("get")) {
+                KeyValueViewModel keyValueViewModel = keyValueService.get(args[1]);
+                System.out.println("get performed: " + keyValueViewModel);
+                return;
+            }
+
+            log.error(String.format("There is no command %s", command));
+        } catch (RuntimeException e) {
+            log.error(e.getMessage());
         }
     }
 }
