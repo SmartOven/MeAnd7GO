@@ -1,11 +1,13 @@
-# Используем базовый образ с Java 17
-FROM openjdk:17-jre-slim
+FROM gradle:7.5.1-jdk17 AS build
 
-# Создаем рабочий каталог внутри контейнера
 WORKDIR /app
+COPY . .
+RUN gradle build
 
-# Копируем JAR-файл в контейнер (предполагается, что JAR-файл находится в директории build/libs)
-COPY build/libs/service-1.0.jar /app/service.jar
+FROM openjdk:17-jdk-slim
 
-# Запускаем Java приложение
-CMD ["java", "-jar", "service.jar"]
+WORKDIR /app
+COPY --from=build /app/build/libs/*.jar /app/service.jar
+
+EXPOSE 8080
+CMD ["java", "-jar", "/app/service.jar"]
