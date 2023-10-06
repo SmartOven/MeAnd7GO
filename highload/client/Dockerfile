@@ -10,4 +10,4 @@ WORKDIR /app
 COPY --from=build /app/build/libs/*.jar /app/client.jar
 
 EXPOSE 8080
-CMD ["java", "-jar", "/app/client.jar"]
+ENTRYPOINT ["java", "-jar", "/app/client.jar"]
