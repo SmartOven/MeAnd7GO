@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  highload-client-1:
+    image: se7go/highload-y25-client
+    environment:
+      &client-config
+      - highload-service-ip=highload-service
+      - highload-service-port=8080
+    container_name: highload-client-container-1
+    command: set key123 1234
+    networks:
+      - network
+
+  highload-client-2:
+    image: se7go/highload-y25-client
+    environment: *client-config
+    container_name: highload-client-container-2
+    command: set key123 12345
+    networks:
+      - network
+
+  highload-client-3:
+    image: se7go/highload-y25-client
+    environment: *client-config
+    container_name: highload-client-container-3
+    command: set key123 12365
+    networks:
+      - network
+networks:
+  network:
+    name: highload-network
+    external: true
