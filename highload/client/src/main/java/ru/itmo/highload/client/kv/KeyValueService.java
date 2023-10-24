@@ -12,8 +12,11 @@ import org.springframework.web.client.RestTemplate;
 
 public class KeyValueService {
     private static final Log log = HttpLogging.forLogName(KeyValueService.class);
-    private static final String URL_GET = "http://10.5.0.3:8080/api/get";
-    private static final String URL_SET = "http://10.5.0.3:8080/api/set";
+
+    private static final String URL = System.getenv("highload-service-ip");
+    private static final String PORT = System.getenv("highload-service-port");
+    private static final String URL_GET = String.format("http://%s:%s/api/get", URL, PORT);
+    private static final String URL_SET = String.format("http://%s:%s/api/set", URL, PORT);
     private final RestTemplate restTemplate;
 
     public KeyValueService() {

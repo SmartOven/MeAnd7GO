@@ -16,6 +16,12 @@ services:
 
   highload-service:
     image: se7go/highload-y25-service
+    environment:
+      - highload-db-ip=highload-db
+      - highload-db-port=27017
+      - highload-db-name=keyValueDb
+      - highload-db-username=highload
+      - highload-db-password=12345
     container_name: highload-service-container
     restart: unless-stopped
     networks:
@@ -23,8 +29,12 @@ services:
         ipv4_address: 10.5.0.3
     ports:
       - "8081:8080"
+
   highload-client:
     image: se7go/highload-y25-client
+    environment:
+      - highload-service-ip=highload-service
+      - highload-service-port=8080
     container_name: highload-client-container
     networks:
       network:
