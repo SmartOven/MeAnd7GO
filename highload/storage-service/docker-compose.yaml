@@ -36,13 +36,13 @@ services:
       - highload-service-ip=highload-service
       - highload-service-port=8080
     container_name: highload-client-container
+    command: set key13 123
     networks:
-      network:
-        ipv4_address: 10.5.0.4
-    command: get key1 value1
+      - network
 
 networks:
   network:
+    name: highload-network
     driver: bridge
     ipam:
       config:
