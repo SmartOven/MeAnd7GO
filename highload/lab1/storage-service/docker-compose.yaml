@@ -1,0 +1,50 @@
+version: '3.8'
+services:
+  highload-db:
+    image: mongo:latest
+    container_name: highload-db-container
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=highload
+      - MONGO_INITDB_ROOT_PASSWORD=12345
+      - MONGO_INITDB_DATABASE=keyValueDb
+    ports:
+      - "27018:27017"
+    networks:
+      network:
+        ipv4_address: 10.5.0.2
+
+  highload-service:
+    image: se7go/highload-y25-service
+    environment:
+      - highload-db-ip=highload-db
+      - highload-db-port=27017
+      - highload-db-name=keyValueDb
+      - highload-db-username=highload
+      - highload-db-password=12345
+    container_name: highload-service-container
+    restart: unless-stopped
+    networks:
+      network:
+        ipv4_address: 10.5.0.3
+    ports:
+      - "8081:8080"
+
+  highload-client:
+    image: se7go/highload-y25-client
+    environment:
+      - highload-service-ip=highload-service
+      - highload-service-port=8080
+    container_name: highload-client-container
+    command: set key13 123
+    networks:
+      - network
+
+networks:
+  network:
+    name: highload-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1
