@@ -16,7 +16,11 @@ public class SparseIndex {
         segmentOffsets.insertSorted(new Pair<>(key, offset));
     }
 
-    public Integer getNearestIndex(String key) {
+    public Pair<String, Integer> getNearestIndexPair(String key) {
         return segmentOffsets.findNearestOrExact(key);
+    }
+
+    public boolean isEmpty() {
+        return segmentOffsets.isEmpty();
     }
 }

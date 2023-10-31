@@ -10,7 +10,7 @@ public class MemTable {
     /**
      * TreeMap в Java реализован на красно-черном дереве
      */
-    private final TreeMap<String, Integer> treeMap;
+    private final TreeMap<String, String> treeMap;
     private long memSize;
 
     public MemTable() {
@@ -18,11 +18,11 @@ public class MemTable {
         this.memSize = 0;
     }
 
-    public Integer get(String key) {
+    public String get(String key) {
         return treeMap.get(key);
     }
 
-    public void set(String key, Integer value) {
+    public void set(String key, String value) {
         treeMap.put(key, value);
         memSize += key.length() * 2L; // key
         memSize += 4; // value

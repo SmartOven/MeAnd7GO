@@ -16,8 +16,8 @@ public class SortedPairList<Key, Value> extends ArrayList<Pair<Key, Value>> {
         add(i < 0 ? -i - 1 : i, pair);
     }
 
-    public Value findNearestOrExact(Key key) {
+    public Pair<Key, Value> findNearestOrExact(Key key) {
         int i = Collections.binarySearch(this, new Pair<>(key, null), comparator);
-        return get(i).getValue();
+        return get(i);
     }
 }
