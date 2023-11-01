@@ -17,6 +17,7 @@ public class KeyValueService {
     private static final String PORT = System.getenv("highloadserviceport");
     private static final String URL_GET = String.format("http://%s:%s/api/get", URL, PORT);
     private static final String URL_SET = String.format("http://%s:%s/api/set", URL, PORT);
+    private static final String URL_MEM = String.format("http://%s:%s/api/mem", URL, PORT);
     private final RestTemplate restTemplate;
 
     public KeyValueService() {
@@ -39,13 +40,18 @@ public class KeyValueService {
     }
 
     public KeyValueViewModel set(KeyValueDto keyValueDto) {
-//        log.info(String.format("Sending request on %s with body=%s", URL_SET, keyValueDto));
+        log.info(String.format("Sending request on %s with body=%s", URL_SET, keyValueDto));
         RequestEntity<KeyValueDto> request = RequestEntity.post(URL_SET).body(keyValueDto);
         ResponseEntity<KeyValueViewModel> response = restTemplate.exchange(request, KeyValueViewModel.class);
         if (!response.getStatusCode().is2xxSuccessful()) {
             log.error("Request failed with status code: " + response.getStatusCode());
             return null;
         }
+        return response.getBody();
+    }
+
+    public double getMemUsage() {
+        ResponseEntity<Double> response = restTemplate.getForEntity(URL_MEM, Double.class);
         return response.getBody();
     }
 }

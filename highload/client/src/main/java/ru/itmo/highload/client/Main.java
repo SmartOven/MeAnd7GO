@@ -11,7 +11,7 @@ public class Main {
     private static final Log log = HttpLogging.forLogName(Main.class);
 
     public static void main(String[] args) {
-        do1();
+        testMemTableDump();
 //        KeyValueService keyValueService = new KeyValueService();
 //        log.info("Starting...");
 //        try {
@@ -44,17 +44,28 @@ public class Main {
 //        }
     }
 
-    private static void do1() {
-        int reqCount = 100000;
+    private static void testMemTableDump() {
+        int i = 1;
+
         KeyValueService keyValueService = new KeyValueService();
-        for (int i = 0; i <= reqCount; i++) {
-            String key = "key-" + i;
-            String value = "value-" + i;
+        while (keyValueService.getMemUsage() < 51.0) {
+            String s = String.valueOf(i).repeat(1000);
+            String key = "key-" + s;
+            String value = "value-" + s;
+            KeyValueDto keyValueDto = new KeyValueDto(key, value);
+            KeyValueViewModel ignored = keyValueService.set(keyValueDto);
+            i++;
+        }
+
+        for (int j = i; j < 2 * i; j++) {
+            String s = String.valueOf(j).repeat(1000);
+            String key = "key-" + s;
+            String value = "value-" + s;
             KeyValueDto keyValueDto = new KeyValueDto(key, value);
             KeyValueViewModel ignored = keyValueService.set(keyValueDto);
         }
 
-        KeyValueViewModel result = keyValueService.get("key-" + reqCount);
+        KeyValueViewModel result = keyValueService.get("key-" + String.valueOf(1).repeat(1000));
         System.out.println(result);
     }
 }

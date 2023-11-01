@@ -47,9 +47,9 @@ public class SstableUtil {
     public static Optional<String> findValueInSegment(String ssTableFilePath, int offsetBytes, String key) {
         try (RandomAccessFile file = new RandomAccessFile(ssTableFilePath, "r")) {
             file.seek(offsetBytes);
-            int pairSizeBytes = (Integer) readCompressedObject(file, INTEGER_SIZE_BYTES);
+            int pairSizeBytes = (Integer) readObject(file, INTEGER_SIZE_BYTES, ssTableFilePath);
             file.seek(offsetBytes + INTEGER_SIZE_BYTES);
-            MemTable segmentTable = (MemTable) readCompressedObject(file, pairSizeBytes);
+            MemTable segmentTable = (MemTable) readCompressedObject(file, pairSizeBytes, ssTableFilePath);
             return Optional.ofNullable(segmentTable.get(key));
         } catch (IOException | ClassNotFoundException e) {
             log.error(e);
@@ -57,18 +57,33 @@ public class SstableUtil {
         }
     }
 
-    private static Object readCompressedObject(RandomAccessFile file, int objectSize)
+    private static Object readCompressedObject(RandomAccessFile file, int objectSize, String fileName)
             throws IOException, ClassNotFoundException {
         byte[] data = new byte[objectSize];
         int bytesRead = file.read(data);
 
         if (bytesRead != objectSize) {
-            throw new RuntimeException(String.format("Cant read %s bytes from file", objectSize));
+            throw new RuntimeException(String.format("Cant read %s bytes from file %s", objectSize, fileName));
         }
 
         try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
              GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream);
              ObjectInputStream objectInputStream = new ObjectInputStream(gzipInputStream)) {
+            return objectInputStream.readObject();
+        }
+    }
+
+    private static Object readObject(RandomAccessFile file, int objectSize, String fileName)
+            throws IOException, ClassNotFoundException {
+        byte[] data = new byte[objectSize];
+        int bytesRead = file.read(data);
+
+        if (bytesRead != objectSize) {
+            throw new RuntimeException(String.format("Cant read %s bytes from file %s", objectSize, fileName));
+        }
+
+        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
+             ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream)) {
             return objectInputStream.readObject();
         }
     }
