@@ -13,8 +13,8 @@ import org.springframework.web.client.RestTemplate;
 public class KeyValueService {
     private static final Log log = HttpLogging.forLogName(KeyValueService.class);
 
-    private static final String URL = System.getenv("highload-service-ip");
-    private static final String PORT = System.getenv("highload-service-port");
+    private static final String URL = System.getenv("highloadserviceip");
+    private static final String PORT = System.getenv("highloadserviceport");
     private static final String URL_GET = String.format("http://%s:%s/api/get", URL, PORT);
     private static final String URL_SET = String.format("http://%s:%s/api/set", URL, PORT);
     private final RestTemplate restTemplate;
@@ -39,7 +39,7 @@ public class KeyValueService {
     }
 
     public KeyValueViewModel set(KeyValueDto keyValueDto) {
-        log.info(String.format("Sending request on %s with body=%s", URL_SET, keyValueDto));
+//        log.info(String.format("Sending request on %s with body=%s", URL_SET, keyValueDto));
         RequestEntity<KeyValueDto> request = RequestEntity.post(URL_SET).body(keyValueDto);
         ResponseEntity<KeyValueViewModel> response = restTemplate.exchange(request, KeyValueViewModel.class);
         if (!response.getStatusCode().is2xxSuccessful()) {

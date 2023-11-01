@@ -32,4 +32,9 @@ public class KeyValueController {
         KeyValueViewModel keyValue = keyValueService.update(keyValueDto);
         return ResponseEntity.ok(keyValue);
     }
+
+    @GetMapping("/mem")
+    public ResponseEntity<?> mem() {
+        return ResponseEntity.ok(keyValueService.getMemUsage());
+    }
 }

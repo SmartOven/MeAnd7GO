@@ -1,12 +1,13 @@
-package ru.itmo.highload.service.a;
+package ru.itmo.highload.service.kv;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.TreeMap;
 
 /**
  * Красно-черное дерево с парами key=value
  */
-public class MemTable {
+public class MemTable implements Serializable {
     /**
      * TreeMap в Java реализован на красно-черном дереве
      */
@@ -25,7 +26,7 @@ public class MemTable {
     public void set(String key, String value) {
         treeMap.put(key, value);
         memSize += key.length() * 2L; // key
-        memSize += 4; // value
+        memSize += value.length() * 2L; // value
     }
 
     public long getMemSize() {

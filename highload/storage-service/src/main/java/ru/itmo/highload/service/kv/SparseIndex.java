@@ -1,4 +1,4 @@
-package ru.itmo.highload.service.a;
+package ru.itmo.highload.service.kv;
 
 import java.util.Comparator;
 

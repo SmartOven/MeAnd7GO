@@ -6,28 +6,23 @@ import org.springframework.stereotype.Service;
 @Service
 public class KeyValueService {
     private final KeyValueRepository keyValueRepository;
-    private final KeyValueMapper keyValueMapper;
 
-    public KeyValueService(
-            @Autowired KeyValueRepository keyValueRepository,
-            @Autowired KeyValueMapper keyValueMapper
-    ) {
+    public KeyValueService(@Autowired KeyValueRepository keyValueRepository) {
         this.keyValueRepository = keyValueRepository;
-        this.keyValueMapper = keyValueMapper;
     }
 
     public KeyValueViewModel get(String key) {
-        return keyValueRepository.findByKey(key)
-                .map(keyValueMapper::toViewModel)
-                .orElse(null);
+        return new KeyValueViewModel(key, keyValueRepository.get(key));
     }
 
     public KeyValueViewModel update(KeyValueDto keyValueDto) {
-        KeyValueDocument keyValueDocument = keyValueMapper.toDocument(keyValueDto);
-        String id = keyValueRepository.findByKey(keyValueDto.getKey())
-                .map(KeyValueDocument::getId)
-                .orElse(null);
-        keyValueDocument.setId(id);
-        return keyValueMapper.toViewModel(keyValueRepository.save(keyValueDocument));
+        String key = keyValueDto.getKey();
+        String value = keyValueDto.getValue();
+        keyValueRepository.set(key, value);
+        return new KeyValueViewModel(key, value);
+    }
+
+    public double getMemUsage() {
+        return keyValueRepository.getMemUsage();
     }
 }
