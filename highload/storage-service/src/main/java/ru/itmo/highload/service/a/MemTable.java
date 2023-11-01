@@ -31,4 +31,8 @@ public class MemTable {
     public long getMemSize() {
         return memSize;
     }
+
+    public String firstKey() {
+        return treeMap.firstKey();
+    }
 }
