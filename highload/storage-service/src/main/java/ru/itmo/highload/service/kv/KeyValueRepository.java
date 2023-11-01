@@ -88,9 +88,8 @@ public class KeyValueRepository {
         for (Pair<String, SparseIndex> sparseIndexPair : sparseIndexes) {
             String fileName = sparseIndexPair.getKey();
             SparseIndex sparseIndex = sparseIndexPair.getValue();
-//            Pair<String, Integer> indexPair = sparseIndex.getNearestIndexPair(key);
-//            int offsetBytes = indexPair.getValue();
-            int offsetBytes = 81;
+            Pair<String, Integer> indexPair = sparseIndex.getNearestIndexPair(key);
+            int offsetBytes = indexPair.getValue();
             Optional<String> valueOptional = SstableUtil.findValueInSegment(
                     storagePath + "/" + fileName,
                     offsetBytes,

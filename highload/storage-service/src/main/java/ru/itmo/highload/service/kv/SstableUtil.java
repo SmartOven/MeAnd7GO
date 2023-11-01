@@ -1,13 +1,10 @@
 package ru.itmo.highload.service.kv;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.RandomAccessFile;
 import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -17,74 +14,34 @@ import org.apache.logging.log4j.Logger;
 
 public class SstableUtil {
     private static final Logger log = LogManager.getLogger();
-    private static final int INTEGER_SIZE_BYTES = 81;
 
     public static SparseIndex dumpMemTable(MemTable memTable, String ssTableFilePath) {
-        byte[] compressedData;
-        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-             GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
+        try (FileOutputStream fileOutputStream = new FileOutputStream(ssTableFilePath);
+             GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream);
              ObjectOutputStream objectOutputStream = new ObjectOutputStream(gzipOutputStream)) {
             objectOutputStream.writeObject(memTable);
-            compressedData = byteArrayOutputStream.toByteArray();
         } catch (IOException e) {
-            log.error(e);
-            return null;
-        }
-
-        try (DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(ssTableFilePath))) {
-            dataOutputStream.writeInt(compressedData.length); // Записываем длину
-            dataOutputStream.write(compressedData); // Записываем сжатые данные
-        } catch (IOException e) {
-            log.error(e);
-            return null;
+            log.error("Error dumping MemTable to file", e);
         }
 
         SparseIndex sparseIndex = new SparseIndex();
-        sparseIndex.setIndex(memTable.firstKey(), INTEGER_SIZE_BYTES);
+        sparseIndex.setIndex(memTable.firstKey(), 0);
         return sparseIndex;
     }
 
     public static Optional<String> findValueInSegment(String ssTableFilePath, int offsetBytes, String key) {
-        try (RandomAccessFile file = new RandomAccessFile(ssTableFilePath, "r")) {
-            file.seek(offsetBytes);
-            int pairSizeBytes = (Integer) readObject(file, INTEGER_SIZE_BYTES, ssTableFilePath);
-            file.seek(offsetBytes + INTEGER_SIZE_BYTES);
-            MemTable segmentTable = (MemTable) readCompressedObject(file, pairSizeBytes, ssTableFilePath);
-            return Optional.ofNullable(segmentTable.get(key));
+        try (FileInputStream fileInputStream = new FileInputStream(ssTableFilePath)) {
+            long ignored = fileInputStream.skip(offsetBytes);
+
+            try (GZIPInputStream gzipInputStream = new GZIPInputStream(fileInputStream);
+                 ObjectInputStream objectInputStream = new ObjectInputStream(gzipInputStream)) {
+                MemTable segmentTable = (MemTable) objectInputStream.readObject();
+                return Optional.ofNullable(segmentTable.get(key));
+            }
+
         } catch (IOException | ClassNotFoundException e) {
-            log.error(e);
+            log.error("Error reading segment from file", e);
             return Optional.empty();
-        }
-    }
-
-    private static Object readCompressedObject(RandomAccessFile file, int objectSize, String fileName)
-            throws IOException, ClassNotFoundException {
-        byte[] data = new byte[objectSize];
-        int bytesRead = file.read(data);
-
-        if (bytesRead != objectSize) {
-            throw new RuntimeException(String.format("Cant read %s bytes from file %s", objectSize, fileName));
-        }
-
-        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
-             GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream);
-             ObjectInputStream objectInputStream = new ObjectInputStream(gzipInputStream)) {
-            return objectInputStream.readObject();
-        }
-    }
-
-    private static Object readObject(RandomAccessFile file, int objectSize, String fileName)
-            throws IOException, ClassNotFoundException {
-        byte[] data = new byte[objectSize];
-        int bytesRead = file.read(data);
-
-        if (bytesRead != objectSize) {
-            throw new RuntimeException(String.format("Cant read %s bytes from file %s", objectSize, fileName));
-        }
-
-        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
-             ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream)) {
-            return objectInputStream.readObject();
         }
     }
 }
