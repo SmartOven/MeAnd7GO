@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -19,10 +20,10 @@ public class SstableUtil {
     private static final long FILE_START_OFFSET = 10L;
 
     /**
-     * Дампит MemTable в конец файла и записывает offset дампа в SparseIndex
+     * Дампит MemTable в конец файла и возвращает offset дампа
      */
-    public static void dumpMemTable(MemTable memTable, String ssTableFilePath, SparseIndex sparseIndex) {
-        try (FileOutputStream fileOutputStream = new FileOutputStream(ssTableFilePath, true);
+    public static long dumpMemTable(MemTable memTable, Path ssTableFilePath) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(ssTableFilePath.toFile(), true);
              GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream);
              ObjectOutputStream objectOutputStream = new ObjectOutputStream(gzipOutputStream)) {
 
@@ -30,13 +31,13 @@ public class SstableUtil {
             objectOutputStream.writeObject(memTable);
             fileOutputStream.getFD().sync();
 
-            sparseIndex.setIndex(memTable.firstKey(), offset);
+            return offset;
         } catch (IOException e) {
-            log.error("Error dumping MemTable to file", e);
+            throw new RuntimeException(e);
         }
     }
 
-    public static Optional<String> findValueInSegment(String ssTableFilePath, SparseIndex sparseIndex, String key) {
+    public static Optional<String> findValueInSegment(Path ssTableFilePath, SparseIndex sparseIndex, String key) {
         long offset = sparseIndex.getNearestIndexPair(key).getValue();
         MemTable segmentTable = readMemTable(ssTableFilePath, offset);
         if (segmentTable == null) {
@@ -48,8 +49,8 @@ public class SstableUtil {
     /**
      * Читает MemTable из файла с заданным offset
      */
-    public static MemTable readMemTable(String ssTableFilePath, long offset) {
-        try (FileInputStream fileInputStream = new FileInputStream(ssTableFilePath)) {
+    public static MemTable readMemTable(Path ssTableFilePath, long offset) {
+        try (FileInputStream fileInputStream = new FileInputStream(ssTableFilePath.toFile())) {
             var ignored = fileInputStream.skip(offset);
 
             try (GZIPInputStream gzipInputStream = new GZIPInputStream(fileInputStream);

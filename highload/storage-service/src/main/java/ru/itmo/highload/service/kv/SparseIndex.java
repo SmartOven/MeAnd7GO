@@ -9,6 +9,7 @@ import java.util.ListIterator;
 import org.springframework.lang.NonNull;
 import ru.itmo.highload.service.kv.util.Pair;
 import ru.itmo.highload.service.kv.util.SortedPairList;
+import ru.itmo.highload.service.kv.util.SparseIndexSerializable;
 
 /**
  * Карта индексов сегментов SS-таблицы
@@ -20,12 +21,22 @@ public class SparseIndex implements List<Pair<String, Long>> {
         segmentOffsets = new SortedPairList<>(Comparator.comparing(Pair::getKey));
     }
 
-    public void setIndex(String key, Long offset) {
-        segmentOffsets.insertSorted(new Pair<>(key, offset));
+    public void setIndex(MemTable memTable, long offset) {
+        segmentOffsets.insertSorted(new Pair<>(memTable.firstKey(), offset));
     }
 
     public Pair<String, Long> getNearestIndexPair(String key) {
         return segmentOffsets.findNearestOrExact(key);
+    }
+
+    public SparseIndexSerializable toSerializable() {
+        return new SparseIndexSerializable(segmentOffsets);
+    }
+
+    public static SparseIndex ofSerializable(SparseIndexSerializable sparseIndexSerializable) {
+        SparseIndex sparseIndex = new SparseIndex();
+        sparseIndex.addAll(sparseIndexSerializable.getSegmentOffsets());
+        return sparseIndex;
     }
 
     @Override
@@ -79,7 +90,7 @@ public class SparseIndex implements List<Pair<String, Long>> {
     }
 
     @Override
-    public boolean addAll(int index,@NonNull Collection<? extends Pair<String, Long>> c) {
+    public boolean addAll(int index, @NonNull Collection<? extends Pair<String, Long>> c) {
         return segmentOffsets.addAll(index, c);
     }
 

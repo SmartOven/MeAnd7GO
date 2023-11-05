@@ -1,10 +1,11 @@
 package ru.itmo.highload.service.kv.util;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-public class SortedPairList<Key, Value> extends ArrayList<Pair<Key, Value>> {
+public class SortedPairList<Key, Value> extends ArrayList<Pair<Key, Value>> implements Serializable {
     private final Comparator<Pair<Key, Value>> comparator;
 
     public SortedPairList(Comparator<Pair<Key, Value>> comparator) {
