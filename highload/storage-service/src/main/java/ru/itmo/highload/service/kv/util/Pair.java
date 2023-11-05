@@ -1,4 +1,4 @@
-package ru.itmo.highload.service.kv;
+package ru.itmo.highload.service.kv.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

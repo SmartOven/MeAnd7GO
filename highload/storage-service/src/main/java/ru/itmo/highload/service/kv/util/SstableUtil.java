@@ -1,4 +1,4 @@
-package ru.itmo.highload.service.kv;
+package ru.itmo.highload.service.kv.util;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -11,9 +11,12 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import ru.itmo.highload.service.kv.MemTable;
+import ru.itmo.highload.service.kv.SparseIndex;
 
 public class SstableUtil {
     private static final Logger log = LogManager.getLogger();
+    private static final long FILE_START_OFFSET = 10L;
 
     /**
      * Дампит MemTable в конец файла и записывает offset дампа в SparseIndex
@@ -23,12 +26,11 @@ public class SstableUtil {
              GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream);
              ObjectOutputStream objectOutputStream = new ObjectOutputStream(gzipOutputStream)) {
 
-            long offset = fileOutputStream.getChannel().position() - 10;
+            long offset = fileOutputStream.getChannel().position() - FILE_START_OFFSET;
             objectOutputStream.writeObject(memTable);
             fileOutputStream.getFD().sync();
 
             sparseIndex.setIndex(memTable.firstKey(), offset);
-
         } catch (IOException e) {
             log.error("Error dumping MemTable to file", e);
         }

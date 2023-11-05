@@ -13,6 +13,7 @@ import org.springframework.lang.NonNull;
  * Красно-черное дерево с парами key=value
  */
 public class MemTable implements Serializable, Map<String, String> {
+    private static final long CHAR_SIZE_BYTES = 2L;
     /**
      * TreeMap в Java реализован на красно-черном дереве
      */
@@ -22,11 +23,6 @@ public class MemTable implements Serializable, Map<String, String> {
     public MemTable() {
         this.treeMap = new TreeMap<>(Comparator.naturalOrder());
         this.memSize = 0;
-    }
-    public void set(String key, String value) {
-        treeMap.put(key, value);
-        memSize += key.length() * 2L; // key
-        memSize += value.length() * 2L; // value
     }
 
     public long getMemSize() {
@@ -74,15 +70,20 @@ public class MemTable implements Serializable, Map<String, String> {
     @Override
     public String put(String key, String value) {
         if (!treeMap.containsKey(key)) {
-            memSize += key.length() * 2L; // key
-            memSize += value.length() * 2L; // value
+            memSize += key.length() * CHAR_SIZE_BYTES; // key
+            memSize += value.length() * CHAR_SIZE_BYTES; // value
         }
         return treeMap.put(key, value);
     }
 
     @Override
     public String remove(Object key) {
-        return treeMap.remove(key);
+        String value = treeMap.remove(key);
+        if (value != null) {
+            memSize -= ((String) key).length() * CHAR_SIZE_BYTES; // key
+            memSize -= value.length() * CHAR_SIZE_BYTES; // value
+        }
+        return value;
     }
 
     @Override

@@ -11,6 +11,9 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import ru.itmo.highload.service.kv.util.Pair;
+import ru.itmo.highload.service.kv.util.SortedPairList;
+import ru.itmo.highload.service.kv.util.SstableUtil;
 
 @Service
 public class KeyValueRepository {
@@ -29,14 +32,12 @@ public class KeyValueRepository {
             @Value("${ss-table.storage.path:~/storage}") String storagePath,
             @Value("${ss-table.segment.size.kib:4}") int segmentSizeKib,
             @Value("${ss-table.merged.size.mib:1}") int mergedSizeMib) {
-        this.memTable = new MemTable();
-        this.sparseIndexes = new SortedPairList<>(Comparator.comparing(Pair::getKey));
+        this.memTable = new MemTable(); // TODO wal.loadMemTable()
+        this.sparseIndexes = new SortedPairList<>(Comparator.comparing(Pair::getKey)); // TODO = wal.loadIndexes();
         this.memTableSizeBytes = memTableSizeMib * MIB_TO_BYTES;
         this.segmentSizeBytes = segmentSizeKib * KIB_TO_BYTES;
         this.mergedSizeBytes = mergedSizeMib * MIB_TO_BYTES;
         this.storagePath = storagePath.charAt(storagePath.length() - 1) == '/' ? storagePath : storagePath + '/';
-
-        deleteOldFiles(storagePath);
     }
 
     public double getMemUsage() {
@@ -54,8 +55,11 @@ public class KeyValueRepository {
     public void set(String key, String value) {
         if (memTable.getMemSize() >= memTableSizeBytes) {
             dumpMemTable();
+            // TODO wal.clear()
+        } else {
+            // TODO wal(key, value)
         }
-        memTable.set(key, value);
+        memTable.put(key, value);
     }
 
     @Scheduled(
@@ -73,7 +77,7 @@ public class KeyValueRepository {
         }
 
         // Собираем все в больших Шлёпп
-        List<MemTable> bigFloppas = new ArrayList<>();
+        List<MemTable> bigFloppaList = new ArrayList<>();
         MemTable bigFloppa = new MemTable();
         for (Pair<String, SparseIndex> sparseIndexPair : dumpingSparseIndexes) {
             String fileName = sparseIndexPair.getKey();
@@ -85,19 +89,19 @@ public class KeyValueRepository {
                 }
                 bigFloppa.putAllIfAbsent(tmpMemTable);
                 if (bigFloppa.getMemSize() >= mergedSizeBytes) {
-                    bigFloppas.add(bigFloppa);
+                    bigFloppaList.add(bigFloppa);
                     bigFloppa = new MemTable();
                 }
             }
         }
         if (!bigFloppa.isEmpty()) {
-            bigFloppas.add(bigFloppa);
+            bigFloppaList.add(bigFloppa);
         }
 
         // Разделяем их на сегменты и складываем в файлы
-        List<Pair<String, SparseIndex>> floppaSpareIndexes = new ArrayList<>(bigFloppas.size());
+        List<Pair<String, SparseIndex>> floppaSpareIndexes = new ArrayList<>(bigFloppaList.size());
         long timestamp = System.currentTimeMillis();
-        for (MemTable floppa : bigFloppas) {
+        for (MemTable floppa : bigFloppaList) {
             SparseIndex floppaSparseIndex = new SparseIndex();
             String floppaTimestamp = String.valueOf(timestamp++);
 
@@ -146,7 +150,6 @@ public class KeyValueRepository {
     }
 
     private String findValueOnDisk(String key) {
-
         if (sparseIndexes.isEmpty()) {
             return null;
         }
@@ -164,15 +167,5 @@ public class KeyValueRepository {
             }
         }
         return null;
-    }
-
-    private static void deleteOldFiles(String storagePath) {
-        File[] files = new File(storagePath).listFiles();
-        if (files == null) {
-            return;
-        }
-        for (File file : files) {
-            var ignored = file.delete();
-        }
     }
 }

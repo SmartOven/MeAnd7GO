@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.ListIterator;
 
 import org.springframework.lang.NonNull;
+import ru.itmo.highload.service.kv.util.Pair;
+import ru.itmo.highload.service.kv.util.SortedPairList;
 
 /**
  * Карта индексов сегментов SS-таблицы
