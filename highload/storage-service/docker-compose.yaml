@@ -43,8 +43,6 @@ services:
       - highloadserviceport=8081
     container_name: highload-client-container
     command: set key13 123
-    depends_on:
-      - highload-service
     networks:
       - network
 
