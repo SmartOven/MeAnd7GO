@@ -42,6 +42,12 @@ public class KeyValueRepository {
         this.memTableSizeBytes = memTableSizeMib * MIB_TO_BYTES;
         this.segmentSizeBytes = segmentSizeKib * KIB_TO_BYTES;
         this.mergedSizeBytes = mergedSizeMib * MIB_TO_BYTES;
+        if (!ssTablesDirPath.toFile().exists()){
+            var ignored = ssTablesDirPath.toFile().mkdirs();
+        }
+        if (!indexDirPath.toFile().exists()){
+            var ignored = indexDirPath.toFile().mkdirs();
+        }
     }
 
     public double getMemUsage() {

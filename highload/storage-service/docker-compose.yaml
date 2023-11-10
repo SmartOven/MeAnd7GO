@@ -40,9 +40,9 @@ services:
     image: se7go/highload-y25-client
     environment:
       - highloadserviceip=highload-service
-      - highloadserviceport=8081
+      - highloadserviceport=8080
     container_name: highload-client-container
-    command: set key13 123
+    command: set key13 123 --logic=test
     networks:
       - network
 
