@@ -7,13 +7,23 @@ import ru.itmo.highload.client.kv.KeyValueDto;
 import ru.itmo.highload.client.kv.KeyValueViewModel;
 import ru.itmo.highload.client.kv.KeyValueService;
 
+import java.util.Arrays;
+
 public class Main {
     private static final Log log = HttpLogging.forLogName(Main.class);
 
     public static void main(String[] args) throws InterruptedException {
         KeyValueService keyValueService = new KeyValueService();
-//        normalLogic(keyValueService, args);
-//        testMemTableDumpFullFill(keyValueService);
+        var newLength = Arrays.stream(args).filter(arg -> arg.equals("--logic=test")).count();
+        if (newLength != args.length) {
+            testLogic(keyValueService);
+            return;
+        }
+        normalLogic(keyValueService, args);
+    }
+
+    private static void testLogic(KeyValueService keyValueService) throws InterruptedException {
+        log.info("Starting test logic...");
         int end = testMemDumpFillX(keyValueService, 0);
         var ignored = testMemDumpFillX(keyValueService, end);
         Thread.sleep(30000);
