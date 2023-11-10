@@ -18,6 +18,9 @@ public class MemTableWal {
     public MemTableWal(Path filePath) {
         this.filePath = filePath;
         this.file = filePath.toFile();
+        if (!this.file.getParentFile().exists()){
+            boolean ignored = this.file.getParentFile().mkdirs();
+        }
         if (!file.exists()) {
             try {
                 var ignored = file.createNewFile();

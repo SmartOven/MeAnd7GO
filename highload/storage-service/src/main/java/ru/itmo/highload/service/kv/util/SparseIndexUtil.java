@@ -28,7 +28,10 @@ public class SparseIndexUtil {
 
     public static SortedPairList<String, SparseIndex> loadSparseIndexes(Path indexesDirPath) {
         SortedPairList<String, SparseIndex> sparseIndexes = new SortedPairList<>(Comparator.comparing(Pair::getKey));
-        for (File file : Objects.requireNonNull(indexesDirPath.toFile().listFiles())) {
+        var listFiles = indexesDirPath.toFile().listFiles();
+        if (listFiles == null)
+            return sparseIndexes;
+        for (File file : listFiles) {
             if (!file.isFile()) {
                 continue;
             }
