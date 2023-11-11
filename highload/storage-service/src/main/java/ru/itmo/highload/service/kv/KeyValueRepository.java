@@ -3,6 +3,7 @@ package ru.itmo.highload.service.kv;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,10 +43,10 @@ public class KeyValueRepository {
         this.memTableSizeBytes = memTableSizeMib * MIB_TO_BYTES;
         this.segmentSizeBytes = segmentSizeKib * KIB_TO_BYTES;
         this.mergedSizeBytes = mergedSizeMib * MIB_TO_BYTES;
-        if (!ssTablesDirPath.toFile().exists()){
+        if (!ssTablesDirPath.toFile().exists()) {
             var ignored = ssTablesDirPath.toFile().mkdirs();
         }
-        if (!indexDirPath.toFile().exists()){
+        if (!indexDirPath.toFile().exists()) {
             var ignored = indexDirPath.toFile().mkdirs();
         }
     }
@@ -89,8 +90,7 @@ public class KeyValueRepository {
         }
 
         // Собираем все в больших Шлёпп
-        List<MemTable> bigFloppaList = new ArrayList<>();
-        MemTable bigFloppa = new MemTable();
+        List<Pair<MemTable, Map.Entry<String, String>>> mergingMemTables = new ArrayList<>();
         for (Pair<String, SparseIndex> sparseIndexPair : dumpingSparseIndexes) {
             String fileName = sparseIndexPair.getKey();
             SparseIndex sparseIndex = sparseIndexPair.getValue();
@@ -99,12 +99,58 @@ public class KeyValueRepository {
                 if (tmpMemTable == null) {
                     continue;
                 }
-                bigFloppa.putAllIfAbsent(tmpMemTable);
-                if (bigFloppa.getMemSize() >= mergedSizeBytes) {
-                    bigFloppaList.add(bigFloppa);
-                    bigFloppa = new MemTable();
+                mergingMemTables.add(new Pair<>(tmpMemTable, tmpMemTable.pollFirstEntry()));
+            }
+        }
+
+        List<MemTable> bigFloppaList = new ArrayList<>();
+        MemTable bigFloppa = new MemTable();
+        while (true) {
+            // Проверяем размер шлеппы и при необходимости обновляем его
+            if (bigFloppa.getMemSize() >= mergedSizeBytes) {
+                bigFloppaList.add(bigFloppa);
+                bigFloppa = new MemTable();
+            }
+
+            // Находим минимальный ключ с самым свежим значением
+            Pair<MemTable, Map.Entry<String, String>> mergingMemTableWithMinKey = mergingMemTables.get(0);
+            Map.Entry<String, String> minEntryByKey = mergingMemTableWithMinKey.getValue();
+            for (Pair<MemTable, Map.Entry<String, String>> mergingMemTable : mergingMemTables) {
+                // Проверка на то, что мапа пустая и больше не участвует в мердже
+                if (mergingMemTable.getValue() == null) {
+                    continue;
+                }
+
+                Map.Entry<String, String> entry = mergingMemTable.getValue();
+
+                // Если изначально был выбран элемент с пустой мапой
+                if (minEntryByKey == null) {
+                    minEntryByKey = entry;
+                    mergingMemTableWithMinKey = mergingMemTable;
+                    continue;
+                }
+
+                int keyDiff = entry.getKey().compareTo(minEntryByKey.getKey());
+                if (keyDiff < 0) {
+                    minEntryByKey = entry;
+                    mergingMemTableWithMinKey = mergingMemTable;
+                    continue;
+                }
+
+                // При нахождении такого же ключа с более старым значением просто скипаем эту пару
+                if (keyDiff == 0) {
+                    mergingMemTable.setValue(mergingMemTable.getKey().pollFirstEntry());
                 }
             }
+
+            // Если все мапы оказались пустые
+            if (minEntryByKey == null) {
+                break;
+            }
+
+            // Записываем пару с минимальным ключом в большого Шлеппу и обновляем для выбранной MemTable пару
+            bigFloppa.put(minEntryByKey.getKey(), minEntryByKey.getValue());
+            mergingMemTableWithMinKey.setValue(mergingMemTableWithMinKey.getKey().pollFirstEntry());
         }
         if (!bigFloppa.isEmpty()) {
             bigFloppaList.add(bigFloppa);

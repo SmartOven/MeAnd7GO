@@ -33,13 +33,8 @@ public class MemTable implements Serializable, Map<String, String> {
         return treeMap.firstKey();
     }
 
-    public void putAllIfAbsent(Map<? extends String, ? extends String> m) {
-        for (Entry<? extends String, ? extends String> entry : m.entrySet()) {
-            if (treeMap.containsKey(entry.getKey())) {
-                continue;
-            }
-            treeMap.put(entry.getKey(), entry.getValue());
-        }
+    public Entry<String, String> pollFirstEntry() {
+        return treeMap.pollFirstEntry();
     }
 
     @Override
