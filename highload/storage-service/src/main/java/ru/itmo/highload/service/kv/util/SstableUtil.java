@@ -12,8 +12,8 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.itmo.highload.service.kv.MemTable;
-import ru.itmo.highload.service.kv.SparseIndex;
+import ru.itmo.highload.service.kv.lsm.MemTable;
+import ru.itmo.highload.service.kv.lsm.SparseIndex;
 
 public class SstableUtil {
     private static final Logger log = LogManager.getLogger();

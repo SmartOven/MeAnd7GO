@@ -14,8 +14,8 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         KeyValueService keyValueService = new KeyValueService();
-        var newLength = Arrays.stream(args).filter(arg -> arg.equals("--logic=test")).count();
-        if (newLength != args.length) {
+        var anyMatch = Arrays.asList(args).contains("--logic=test");
+        if (anyMatch) {
             testLogic(keyValueService);
             return;
         }

@@ -8,9 +8,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Path;
 import java.util.Comparator;
-import java.util.Objects;
 
-import ru.itmo.highload.service.kv.SparseIndex;
+import ru.itmo.highload.service.kv.lsm.SparseIndex;
 
 public class SparseIndexUtil {
     public static void createDump(SparseIndex sparseIndex, Path filePath) {

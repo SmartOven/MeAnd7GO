@@ -1,4 +1,4 @@
-package ru.itmo.highload.service.kv;
+package ru.itmo.highload.service.kv.lsm;
 
 import java.io.File;
 import java.io.FileWriter;

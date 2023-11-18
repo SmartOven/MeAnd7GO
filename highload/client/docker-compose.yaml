@@ -4,8 +4,8 @@ services:
     image: se7go/highload-y25-client
     environment:
       &client-config
-      - highload-service-ip=highload-service
-      - highload-service-port=8080
+      - HIGHLOAD_SERVICE_IP=highload-service
+      - HIGHLOAD_SERVICE_PORT=8080
     container_name: highload-client-container-1
     command: set key123 1234
     networks:

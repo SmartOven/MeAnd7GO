@@ -13,8 +13,8 @@ import org.springframework.web.client.RestTemplate;
 public class KeyValueService {
     private static final Log log = HttpLogging.forLogName(KeyValueService.class);
 
-    private static final String URL = System.getenv("highload-service-ip");
-    private static final String PORT = System.getenv("highload-service-port");
+    private static final String URL = System.getenv("HIGHLOAD_SERVICE_IP");
+    private static final String PORT = System.getenv("HIGHLOAD_SERVICE_PORT");
     private static final String URL_GET = String.format("http://%s:%s/api/get", URL, PORT);
     private static final String URL_SET = String.format("http://%s:%s/api/set", URL, PORT);
     private static final String URL_MEM = String.format("http://%s:%s/api/mem", URL, PORT);

@@ -1,4 +1,4 @@
-package ru.itmo.highload.service.kv;
+package ru.itmo.highload.service.kv.lsm;
 
 import java.util.Collection;
 import java.util.Comparator;
