@@ -1,0 +1,154 @@
+version: '3.8'
+networks:
+  highload-network-bridge:
+    name: highload-network
+    external: true
+volumes:
+  redis_cluster_conf: { }
+services:
+  redis-master-a:
+    image: redis:latest
+    container_name: redis-master-a-container
+    ports:
+      - "7000:7000"
+    networks:
+      highload-network-bridge:
+        ipv4_address: 10.5.1.10
+    environment:
+      REDIS_MASTER_PORT: 7000
+      REDIS_CONF_PATH: /app/redis.conf
+      REDIS_PASSWORD: 12345
+      REDIS_CLUSTER_ENABLED: yes
+    volumes:
+      - ./redis_cluster_conf/:/app/data
+    command: >
+      /bin/bash /app/data/redis-master.sh
+  redis-master-b:
+    image: redis:latest
+    container_name: redis-master-b-container
+    ports:
+      - "7001:7001"
+    networks:
+      highload-network-bridge:
+        ipv4_address: 10.5.1.11
+    environment:
+      REDIS_MASTER_PORT: 7001
+      REDIS_CONF_PATH: /app/redis.conf
+      REDIS_PASSWORD: 12345
+      REDIS_CLUSTER_ENABLED: yes
+    volumes:
+      - ./redis_cluster_conf/:/app/data
+    command: >
+      /bin/bash /app/data/redis-master.sh
+  redis-master-c:
+    image: redis:latest
+    container_name: redis-master-c-container
+    ports:
+      - "7002:7002"
+    networks:
+      highload-network-bridge:
+        ipv4_address: 10.5.1.12
+    environment:
+      REDIS_MASTER_PORT: 7002
+      REDIS_CONF_PATH: /app/redis.conf
+      REDIS_PASSWORD: 12345
+      REDIS_CLUSTER_ENABLED: yes
+    volumes:
+      - ./redis_cluster_conf/:/app/data
+    command: >
+      /bin/bash /app/data/redis-master.sh
+  redis-replica-a:
+    image: redis:latest
+    container_name: redis-replica-a-container
+    ports:
+      - "7003:7003"
+    networks:
+      highload-network-bridge:
+        ipv4_address: 10.5.1.13
+    environment:
+      REDIS_CONF_PATH: /app/redis.conf
+      REDIS_PASSWORD: 12345
+      REDIS_REPLICA_PORT: 7003
+      REDIS_MASTER_PASSWORD: 12345
+      REDIS_MASTER_IP: 10.5.1.10
+      REDIS_MASTER_PORT: 7000
+      REDIS_CLUSTER_ENABLED: yes
+    volumes:
+      - ./redis_cluster_conf/:/app/data
+    command: >
+      /bin/bash /app/data/redis-replica.sh
+    depends_on:
+      - redis-master-a
+  redis-replica-b:
+    image: redis:latest
+    container_name: redis-replica-b-container
+    ports:
+      - "7004:7004"
+    networks:
+      highload-network-bridge:
+        ipv4_address: 10.5.1.14
+    environment:
+      REDIS_CONF_PATH: /app/redis.conf
+      REDIS_PASSWORD: 12345
+      REDIS_REPLICA_PORT: 7004
+      REDIS_MASTER_PASSWORD: 12345
+      REDIS_MASTER_IP: 10.5.1.11
+      REDIS_MASTER_PORT: 7001
+      REDIS_CLUSTER_ENABLED: yes
+    volumes:
+      - ./redis_cluster_conf/:/app/data
+    command: >
+      /bin/bash /app/data/redis-replica.sh
+    depends_on:
+      - redis-master-b
+  redis-replica-c:
+    image: redis:latest
+    container_name: redis-replica-c-container
+    ports:
+      - "7005:7005"
+    networks:
+      highload-network-bridge:
+        ipv4_address: 10.5.1.15
+    environment:
+      REDIS_CONF_PATH: /app/redis.conf
+      REDIS_PASSWORD: 12345
+      REDIS_REPLICA_PORT: 7005
+      REDIS_MASTER_PASSWORD: 12345
+      REDIS_MASTER_IP: 10.5.1.12
+      REDIS_MASTER_PORT: 7002
+      REDIS_CLUSTER_ENABLED: yes
+    volumes:
+      - ./redis_cluster_conf/:/app/data
+    command: >
+      /bin/bash /app/data/redis-replica.sh
+    depends_on:
+      - redis-master-c
+  redis-cluster:
+    image: redis:latest
+    container_name: redis_cluster
+    sysctls:
+      - net.core.somaxconn=65536
+    networks:
+      highload-network-bridge:
+        ipv4_address: 10.5.1.255
+    tty: true
+    environment:
+      REDIS_CONF_PATH: /app/redis.conf
+      REDIS_PASSWORD: 12345
+      REDIS_CLUSTER_ENABLED: yes
+      REDIS_MASTER_A_IP: 10.5.1.10:7000
+      REDIS_MASTER_B_IP: 10.5.1.11:7001
+      REDIS_MASTER_C_IP: 10.5.1.12:7002
+      REDIS_SLAVE_A_IP: 10.5.1.13:7003
+      REDIS_SLAVE_B_IP: 10.5.1.14:7004
+      REDIS_SLAVE_C_IP: 10.5.1.15:7005
+    volumes:
+      - ./redis_cluster_conf/:/app/data
+    command: /bin/bash /app/data/redis-cluster.sh
+    depends_on:
+      - redis-master-a
+      - redis-master-b
+      - redis-master-c
+      - redis-replica-a
+      - redis-replica-b
+      - redis-replica-c
