@@ -3,7 +3,7 @@ services:
   highload-service:
     image: se7go/highload-y25-service:2.92
     environment:
-      - USE_DATABASE=redis
+      - STORAGE_COMPONENT=redis
       - HIGHLOAD_SERVICE_PORT=8080
 
       - HIGHLOAD_STORAGE_PATH=./storage
