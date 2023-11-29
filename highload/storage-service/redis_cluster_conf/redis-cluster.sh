@@ -11,7 +11,6 @@ echo "requirepass ${REDIS_PASSWORD}"
 
 redis-cli --cluster create "${REDIS_MASTER_A_IP}" "${REDIS_MASTER_B_IP}" "${REDIS_MASTER_C_IP}" --cluster-yes -a "${REDIS_PASSWORD}"
 
-redis-cli --cluster add-node "${REDIS_SLAVE_A_IP}" "${REDIS_MASTER_A_IP}" -a "${REDIS_PASSWORD}"
-redis-cli --cluster add-node ${REDIS_SLAVE_B_IP} ${REDIS_MASTER_B_IP} -a "${REDIS_PASSWORD}"
-redis-cli --cluster add-node ${REDIS_SLAVE_C_IP} ${REDIS_MASTER_C_IP} -a "${REDIS_PASSWORD}"
-redis-cli cluster nodes
+redis-cli --cluster add-node "${REDIS_SLAVE_A_IP}" "${REDIS_MASTER_A_IP}" --cluster-slave -a "${REDIS_PASSWORD}"
+redis-cli --cluster add-node "${REDIS_SLAVE_B_IP}" "${REDIS_MASTER_B_IP}" --cluster-slave -a "${REDIS_PASSWORD}"
+redis-cli --cluster add-node "${REDIS_SLAVE_C_IP}" "${REDIS_MASTER_C_IP}" --cluster-slave -a "${REDIS_PASSWORD}"
