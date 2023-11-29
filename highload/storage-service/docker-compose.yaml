@@ -6,7 +6,7 @@ services:
       - STORAGE_COMPONENT=redis
       - HIGHLOAD_SERVICE_PORT=8080
 
-      - HIGHLOAD_STORAGE_PATH=./storage
+      - HIGHLOAD_STORAGE_PATH=/app/storage
       - SS_TABLE_SEGMENT_SIZE_KIB=4
       - SS_TABLE_MERGED_SIZE_MIB=1
       - MEM_TABLE_SIZE_MIB=1
@@ -79,14 +79,14 @@ services:
     environment:
       REDIS_CONF_PATH: /app/redis.conf
       REDIS_PASSWORD: 12345
-      REDIS_SLAVE1_PORT: 6381
+      REDIS_SLAVE_PORT: 6381
       REDIS_MASTER_PASSWORD: 12345
       REDIS_MASTER_IP: 10.5.0.4
       REDIS_MASTER_PORT: 6380
     volumes:
       - ./redis_generate_conf/:/app/generate
     command: >
-      /bin/bash /app/generate/redis-slave1-conf.sh
+      /bin/bash /app/generate/redis-slave-conf.sh
     depends_on:
       - redis-master
 
@@ -102,14 +102,14 @@ services:
     environment:
       REDIS_CONF_PATH: /app/generate/redis.conf
       REDIS_PASSWORD: 12345
-      REDIS_SLAVE2_PORT: 6381
+      REDIS_SLAVE_PORT: 6381
       REDIS_MASTER_PASSWORD: 12345
       REDIS_MASTER_IP: 10.5.0.4
       REDIS_MASTER_PORT: 6380
     volumes:
       - ./redis_generate_conf/:/app/generate
     command: >
-      /bin/bash /app/generate/redis-slave2-conf.sh
+      /bin/bash /app/generate/redis-slave-conf.sh
     depends_on:
       - redis-master
 
