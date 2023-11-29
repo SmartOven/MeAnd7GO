@@ -21,6 +21,7 @@ services:
       REDIS_CLUSTER_ENABLED: yes
     volumes:
       - ./redis_cluster_conf/:/app/data
+      - ./redis_data/master_a/:/data
     command: >
       /bin/bash /app/data/redis-master.sh
   redis-master-b:
@@ -38,6 +39,7 @@ services:
       REDIS_CLUSTER_ENABLED: yes
     volumes:
       - ./redis_cluster_conf/:/app/data
+      - ./redis_data/master_b/:/data
     command: >
       /bin/bash /app/data/redis-master.sh
   redis-master-c:
@@ -55,6 +57,7 @@ services:
       REDIS_CLUSTER_ENABLED: yes
     volumes:
       - ./redis_cluster_conf/:/app/data
+      - ./redis_data/master_c/:/data
     command: >
       /bin/bash /app/data/redis-master.sh
   redis-replica-a:
@@ -75,6 +78,7 @@ services:
       REDIS_CLUSTER_ENABLED: yes
     volumes:
       - ./redis_cluster_conf/:/app/data
+      - ./redis_data/replica_a/:/data
     command: >
       /bin/bash /app/data/redis-replica.sh
     depends_on:
@@ -97,6 +101,7 @@ services:
       REDIS_CLUSTER_ENABLED: yes
     volumes:
       - ./redis_cluster_conf/:/app/data
+      - ./redis_data/replica_b/:/data
     command: >
       /bin/bash /app/data/redis-replica.sh
     depends_on:
@@ -119,6 +124,7 @@ services:
       REDIS_CLUSTER_ENABLED: yes
     volumes:
       - ./redis_cluster_conf/:/app/data
+      - ./redis_data/replica_c/:/data
     command: >
       /bin/bash /app/data/redis-replica.sh
     depends_on:
