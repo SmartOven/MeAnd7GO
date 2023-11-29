@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   highload-service:
-    image: se7go/highload-y25-service:2.92
+    image: se7go/highload-y25-service:4.05
     environment:
       - STORAGE_COMPONENT=redis
       - HIGHLOAD_SERVICE_PORT=8080
@@ -19,8 +19,14 @@ services:
 
 #      - REDIS_USERNAME=highload
       - REDIS_PASSWORD=12345
-      - REDIS_HOST=redis-slave1
-      - REDIS_PORT=6381
+      - REDIS_MASTER_A_IP=10.5.1.10:7000
+      - REDIS_MASTER_B_IP=10.5.1.11:7001
+      - REDIS_MASTER_C_IP=10.5.1.12:7002
+      - REDIS_SLAVE_A_IP=10.5.1.13:7003
+      - REDIS_SLAVE_B_IP=10.5.1.14:7004
+      - REDIS_SLAVE_C_IP=10.5.1.15:7005
+      - REDIS_NODES=
+
     container_name: highload-service-container
     restart: unless-stopped
     ports:
@@ -28,7 +34,8 @@ services:
     networks:
       highload-network-bridge:
         ipv4_address: 10.5.0.2
-
+    volumes:
+      - ./storage/:/app/storage
   mongo-db:
     image: mongo:latest
     container_name: mongo-db-container
@@ -107,7 +114,7 @@ services:
       - redis-master
 
   highload-client:
-    image: se7go/highload-y25-client
+    image: se7go/highload-y25-client:2.99
     environment:
       - HIGHLOAD_SERVICE_IP=highload-service
       - HIGHLOAD_SERVICE_PORT=8080
@@ -130,4 +137,5 @@ networks:
     name: highload-network-host
     driver: host
 volumes:
-  redis_data: {}
+  redis_data: { }
+  storage: { }
