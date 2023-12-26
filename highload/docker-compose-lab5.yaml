@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  sharding-proxy-service:
+    image: se7go/highload-y25-proxy:1.0
+    environment:
+      - SHARD_COMPONENT=lsm-sharding-consistent
+      - HIGHLOAD_SHARDING_PORT=8080
+      - MASTER_HOSTS=master-node-1:8080,master-node-2:8080
+      - REPLICA_HOSTS=replica-node-1:8080,replica-node-2:8080
+      - COUNT_VIRTUAL_NODES=5
+      - PING_NODE_TIMEOUT_MS=10000
+      - PING_RETRY_COUNT=3
+      - STORAGE_PATH=/app/storage
+
+      - HIGHLOAD_MONGO_DB_IP=mongo-db
+      - HIGHLOAD_MONGO_DB_PORT=27017
+      - HIGHLOAD_MONGO_DB_NAME=keyValueDb
+      - HIGHLOAD_MONGO_DB_USERNAME=highload
+      - HIGHLOAD_MONGO_DB_PASSWORD=12345
+
+      - REDIS_PASSWORD=12345
+      - REDIS_NODES=10.5.1.10:7000,10.5.1.11:7001,10.5.1.12:7002,10.5.1.13:7003,10.5.1.14:7004,10.5.1.15:7005
+    container_name: sharding-proxy-service-container
+    restart: unless-stopped
+    networks:
+      - highload-network-lab5-bridge
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./volumes/proxy-storage/:/app/storage
+    depends_on:
+      - master-node-1
+      - master-node-2
+  master-node-1:
+    image: se7go/highload-y25-service:5.01
+    environment:
+      - STORAGE_COMPONENT=master,sharding-lsm
+      - REPLICATION_PORT=18080
+      - HIGHLOAD_SERVICE_PORT=8080
+
+      - HIGHLOAD_STORAGE_PATH=/app/storage
+      - SS_TABLE_SEGMENT_SIZE_KIB=4
+      - SS_TABLE_MERGED_SIZE_MIB=1
+      - MEM_TABLE_SIZE_MIB=1
+    container_name: master-node-1-container
+    restart: unless-stopped
+    networks:
+      - highload-network-lab5-bridge
+    ports:
+      - "18080:8080"
+    volumes:
+      - ./volumes/master-1-storage/:/app/storage
+  replica-node-1:
+    image: se7go/highload-y25-service:5.01
+    environment:
+      - STORAGE_COMPONENT=master,sharding-lsm,replication-lsm
+      - REPLICATION_PORT=18080
+      - HIGHLOAD_SERVICE_PORT=8080
+      - REPLICA_OF_IP=master-node-1
+      - REPLICA_OF_PORT=18080
+      - HIGHLOAD_STORAGE_PATH=/app/storage
+      - SS_TABLE_SEGMENT_SIZE_KIB=4
+      - SS_TABLE_MERGED_SIZE_MIB=1
+      - MEM_TABLE_SIZE_MIB=1
+    container_name: replica-node-1-container
+    restart: unless-stopped
+    networks:
+      - highload-network-lab5-bridge
+    volumes:
+      - ./volumes/replica-1-storage/:/app/storage
+    ports:
+      - "18081:8080"
+  master-node-2:
+    image: se7go/highload-y25-service:5.01
+    environment:
+      - STORAGE_COMPONENT=master,sharding-lsm
+      - REPLICATION_PORT=18080
+      - HIGHLOAD_SERVICE_PORT=8080
+
+      - HIGHLOAD_STORAGE_PATH=/app/storage
+      - SS_TABLE_SEGMENT_SIZE_KIB=4
+      - SS_TABLE_MERGED_SIZE_MIB=1
+      - MEM_TABLE_SIZE_MIB=1
+    container_name: master-node-2-container
+    restart: unless-stopped
+    networks:
+      - highload-network-lab5-bridge
+    volumes:
+      - ./volumes/master-2-storage/:/app/storage
+    ports:
+      - "28080:8080"
+  replica-node-2:
+    image: se7go/highload-y25-service:5.01
+    environment:
+      - STORAGE_COMPONENT=master,sharding-lsm,replication-lsm
+      - REPLICATION_PORT=18080
+      - HIGHLOAD_SERVICE_PORT=8080
+      - REPLICA_OF_IP=master-node-2
+      - REPLICA_OF_PORT=18080
+      - HIGHLOAD_STORAGE_PATH=/app/storage
+      - SS_TABLE_SEGMENT_SIZE_KIB=4
+      - SS_TABLE_MERGED_SIZE_MIB=1
+      - MEM_TABLE_SIZE_MIB=1
+    container_name: replica-node-2-container
+    restart: unless-stopped
+    networks:
+      - highload-network-lab5-bridge
+    volumes:
+      - ./volumes/replica-2-storage/:/app/storage
+    ports:
+      - "28081:8080"
+networks:
+  highload-network-lab5-bridge:
+    name: highload-network-lab5
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.1.0.0/16
+          gateway: 10.1.0.1

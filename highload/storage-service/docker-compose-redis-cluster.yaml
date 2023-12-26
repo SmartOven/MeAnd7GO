@@ -3,8 +3,7 @@ networks:
   highload-network-bridge:
     name: highload-network
     external: true
-volumes:
-  redis_cluster_conf: { }
+
 services:
   redis-master-a:
     image: redis:latest
@@ -20,8 +19,8 @@ services:
       REDIS_PASSWORD: 12345
       REDIS_CLUSTER_ENABLED: yes
     volumes:
-      - ./redis_cluster_conf/:/app/data
-      - ./redis_data/master_a/:/data
+      - ./volumes/redis_cluster_conf/:/app/data
+      - ./volumes/redis_data/master_a/:/data
     command: >
       /bin/bash /app/data/redis-master.sh
   redis-master-b:
@@ -38,8 +37,8 @@ services:
       REDIS_PASSWORD: 12345
       REDIS_CLUSTER_ENABLED: yes
     volumes:
-      - ./redis_cluster_conf/:/app/data
-      - ./redis_data/master_b/:/data
+      - ./volumes/redis_cluster_conf/:/app/data
+      - ./volumes/redis_data/master_b/:/data
     command: >
       /bin/bash /app/data/redis-master.sh
   redis-master-c:
@@ -56,8 +55,8 @@ services:
       REDIS_PASSWORD: 12345
       REDIS_CLUSTER_ENABLED: yes
     volumes:
-      - ./redis_cluster_conf/:/app/data
-      - ./redis_data/master_c/:/data
+      - ./volumes/redis_cluster_conf/:/app/data
+      - ./volumes/redis_data/master_c/:/data
     command: >
       /bin/bash /app/data/redis-master.sh
   redis-replica-a:
@@ -77,8 +76,8 @@ services:
       REDIS_MASTER_PORT: 7000
       REDIS_CLUSTER_ENABLED: yes
     volumes:
-      - ./redis_cluster_conf/:/app/data
-      - ./redis_data/replica_a/:/data
+      - ./volumes/redis_cluster_conf/:/app/data
+      - ./volumes/redis_data/replica_a/:/data
     command: >
       /bin/bash /app/data/redis-replica.sh
     depends_on:
@@ -100,8 +99,8 @@ services:
       REDIS_MASTER_PORT: 7001
       REDIS_CLUSTER_ENABLED: yes
     volumes:
-      - ./redis_cluster_conf/:/app/data
-      - ./redis_data/replica_b/:/data
+      - ./volumes/redis_cluster_conf/:/app/data
+      - ./volumes/redis_data/replica_b/:/data
     command: >
       /bin/bash /app/data/redis-replica.sh
     depends_on:
@@ -123,8 +122,8 @@ services:
       REDIS_MASTER_PORT: 7002
       REDIS_CLUSTER_ENABLED: yes
     volumes:
-      - ./redis_cluster_conf/:/app/data
-      - ./redis_data/replica_c/:/data
+      - ./volumes/redis_cluster_conf/:/app/data
+      - ./volumes/redis_data/replica_c/:/data
     command: >
       /bin/bash /app/data/redis-replica.sh
     depends_on:
@@ -132,12 +131,9 @@ services:
   redis-cluster:
     image: redis:latest
     container_name: redis_cluster
-    sysctls:
-      - net.core.somaxconn=65536
     networks:
       highload-network-bridge:
         ipv4_address: 10.5.1.255
-    tty: true
     environment:
       REDIS_CONF_PATH: /app/redis.conf
       REDIS_PASSWORD: 12345
@@ -149,7 +145,7 @@ services:
       REDIS_SLAVE_B_IP: 10.5.1.14:7004
       REDIS_SLAVE_C_IP: 10.5.1.15:7005
     volumes:
-      - ./redis_cluster_conf/:/app/data
+      - ./volumes/redis_cluster_conf/:/app/data
     command: /bin/bash /app/data/redis-cluster.sh
     depends_on:
       - redis-master-a

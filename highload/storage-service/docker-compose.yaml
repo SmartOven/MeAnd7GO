@@ -1,9 +1,9 @@
 version: '3.8'
 services:
   highload-service:
-    image: se7go/highload-y25-service:4.05
+    image: se7go/highload-y25-service:4.07
     environment:
-      - STORAGE_COMPONENT=redis
+      - STORAGE_COMPONENT=lsm
       - HIGHLOAD_SERVICE_PORT=8080
 
       - HIGHLOAD_STORAGE_PATH=/app/storage
@@ -17,15 +17,11 @@ services:
       - HIGHLOAD_MONGO_DB_USERNAME=highload
       - HIGHLOAD_MONGO_DB_PASSWORD=12345
 
-#      - REDIS_USERNAME=highload
+
       - REDIS_PASSWORD=12345
-      - REDIS_MASTER_A_IP=10.5.1.10:7000
-      - REDIS_MASTER_B_IP=10.5.1.11:7001
-      - REDIS_MASTER_C_IP=10.5.1.12:7002
-      - REDIS_SLAVE_A_IP=10.5.1.13:7003
-      - REDIS_SLAVE_B_IP=10.5.1.14:7004
-      - REDIS_SLAVE_C_IP=10.5.1.15:7005
-      - REDIS_NODES=
+#      - REDIS_HOST=redis-slave1
+#      - REDIS_PORT=6380
+      - REDIS_NODES=10.5.1.10:7000,10.5.1.11:7001,10.5.1.12:7002,10.5.1.13:7003,10.5.1.14:7004,10.5.1.15:7005
 
     container_name: highload-service-container
     restart: unless-stopped
@@ -35,7 +31,7 @@ services:
       highload-network-bridge:
         ipv4_address: 10.5.0.2
     volumes:
-      - ./storage/:/app/storage
+      - ./volumes/storage/:/app/storage
   mongo-db:
     image: mongo:latest
     container_name: mongo-db-container
@@ -59,7 +55,7 @@ services:
       REDIS_CONF_PATH: /app/redis.conf
       REDIS_PASSWORD: 12345
     volumes:
-      - ./redis_generate_conf/:/app/generate
+      - ./volumes/redis_generate_conf/:/app/generate
     command: >
       /bin/bash /app/generate/redis-master-conf.sh
     ports:
@@ -84,7 +80,7 @@ services:
       REDIS_MASTER_IP: 10.5.0.4
       REDIS_MASTER_PORT: 6380
     volumes:
-      - ./redis_generate_conf/:/app/generate
+      - ./volumes/redis_generate_conf/:/app/generate
     command: >
       /bin/bash /app/generate/redis-slave-conf.sh
     depends_on:
@@ -93,7 +89,6 @@ services:
   redis-slave2:
     image: redis:latest
     container_name: redis-db-slave2-container
-#    command: redis-server --requirepass ${REDIS_PASSWORD} --port 6382 --slaveof 10.5.0.4 6380 --read-only yes
     ports:
       - "6382:6382"
     networks:
@@ -107,7 +102,7 @@ services:
       REDIS_MASTER_IP: 10.5.0.4
       REDIS_MASTER_PORT: 6380
     volumes:
-      - ./redis_generate_conf/:/app/generate
+      - ./volumes/redis_generate_conf/:/app/generate
     command: >
       /bin/bash /app/generate/redis-slave-conf.sh
     depends_on:
@@ -120,7 +115,6 @@ services:
       - HIGHLOAD_SERVICE_PORT=8080
     container_name: highload-client-container
     command: set key13 123
-    #--logic=test
     networks:
       - highload-network-bridge
 
@@ -136,6 +130,3 @@ networks:
   highload-network-host:
     name: highload-network-host
     driver: host
-volumes:
-  redis_data: { }
-  storage: { }

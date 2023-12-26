@@ -6,9 +6,9 @@ import java.util.Collections;
 import java.util.Comparator;
 
 public class SortedPairList<Key, Value> extends ArrayList<Pair<Key, Value>> implements Serializable {
-    private final Comparator<Pair<Key, Value>> comparator;
+    private final Comparator<? super Pair<Key, Value>> comparator;
 
-    public SortedPairList(Comparator<Pair<Key, Value>> comparator) {
+    public SortedPairList(Comparator<? super  Pair<Key, Value>> comparator) {
         this.comparator = comparator;
     }
 

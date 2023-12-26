@@ -1,0 +1,26 @@
+highload:
+  sharding:
+      lsm:
+        master-hosts: ${MASTER_HOSTS:replica-node-1:8080,replica-node-2:8080}
+        replica-hosts: ${REPLICA_HOSTS:}
+        configuration:
+          count-virtual-nodes: ${COUNT_VIRTUAL_NODES:0}
+          ping-node-timeout-ms: ${PING_NODE_TIMEOUT_MS:10000}
+          ping-retry-count: ${PING_RETRY_COUNT:3}
+#      configuration:
+#          count-virtual-nodes: 3
+#          ping-node-timeout-ms: 1000
+#          ping-retry-count: 3
+#      sections:
+#          - name: section-0
+#            master: m1-ip
+#            replicas:
+#                - r1ip1
+#                - r1ip2
+#                - r1ip3
+#          - name: section1
+#            master: m2-ip
+#            replicas:
+#                - r2ip1
+#                - r2ip2
+#                - r2ip3
